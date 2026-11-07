@@ -11,6 +11,10 @@ const ICON = {
       : '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6.2 2h3.6l-.5 3.1 2.1 2.1v1.3H4.6V7.2l2.1-2.1z"/><path d="M8 8.5V14"/></svg>',
   minimize:
     '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 8h8"/></svg>',
+  moon:
+    '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 9.6A5.6 5.6 0 0 1 6.4 2.8a5.6 5.6 0 1 0 6.8 6.8z"/></svg>',
+  sun:
+    '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="8" r="3.1"/><path d="M8 1.4v1.6M8 13v1.6M1.4 8h1.6M13 8h1.6M3.3 3.3l1.1 1.1M11.6 11.6l1.1 1.1M12.7 3.3l-1.1 1.1M4.4 11.6l-1.1 1.1"/></svg>',
   settings:
     '<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" fill-rule="evenodd"><path d="M6.74 1.52L9.26 1.52L9.84 3.46L11.02 4.14L12.98 3.67L12.98 3.67L14.24 5.85L12.85 7.32L12.85 8.68L14.24 10.15L14.24 10.15L12.98 12.33L11.02 11.86L9.84 12.54L9.26 14.48L9.26 14.48L6.74 14.48L6.16 12.54L4.98 11.86L3.02 12.33L3.02 12.33L1.76 10.15L3.15 8.68L3.15 7.32L1.76 5.85L1.76 5.85L3.02 3.67L4.98 4.14L6.16 3.46L6.74 1.52Z M10.05 8A2.05 2.05 0 1 1 5.95 8A2.05 2.05 0 1 1 10.05 8Z"/></svg>',
   close:
@@ -31,6 +35,7 @@ const foot = document.getElementById('foot');
 const docEl = document.getElementById('doc');
 const stampEl = document.getElementById('stamp');
 const refreshBtn = document.getElementById('refresh');
+const themeBtn = document.getElementById('theme');
 const pinBtn = document.getElementById('pin');
 const minimizeBtn = document.getElementById('minimize');
 const settingsBtn = document.getElementById('settings');
@@ -162,8 +167,15 @@ function render(payload) {
   list.replaceChildren();
   if (!items.length) {
     const hint = document.createElement('div');
-    hint.className = 'chip';
-    hint.textContent = status === 'loading' ? '正在同步语雀…' : '今天没有待办';
+    if (status === 'unconfigured') {
+      hint.className = 'chip';
+      hint.textContent = '还没设置语雀文档，点右上角齿轮填链接';
+      hint.dataset.action = 'settings';
+      hint.addEventListener('click', () => openSettings());
+    } else {
+      hint.className = 'chip';
+      hint.textContent = status === 'loading' ? '正在同步语雀…' : '今天没有待办';
+    }
     list.append(hint);
   } else {
     items.forEach((item) => list.append(buildItem(item)));
@@ -175,8 +187,8 @@ function render(payload) {
     }
   }
 
-  const docTitle = payload && payload.doc && payload.doc.title ? payload.doc.title : '代办';
-  docEl.textContent = `语雀 · ${docTitle}`;
+  const docTitle = payload && payload.doc && payload.doc.title ? payload.doc.title : '';
+  docEl.textContent = docTitle ? `语雀 · ${docTitle}` : '语雀 · 未设置文档';
   stampEl.textContent = payload && payload.fetchedAt ? `更新于 ${clockLabel(payload.fetchedAt)}` : '';
 
   if (spinning) {
@@ -224,6 +236,27 @@ settingsBtn.innerHTML = ICON.settings;
 applyPinned();
 applyCollapsed();
 renderDate();
+
+const darkQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+function applyThemeIcon() {
+  const isDark = darkQuery.matches;
+  themeBtn.innerHTML = isDark ? ICON.sun : ICON.moon;
+  const label = isDark ? '切换到浅色模式' : '切换到深色模式';
+  themeBtn.title = label;
+  themeBtn.setAttribute('aria-label', label);
+}
+
+applyThemeIcon();
+if (typeof darkQuery.addEventListener === 'function') {
+  darkQuery.addEventListener('change', applyThemeIcon);
+} else if (typeof darkQuery.addListener === 'function') {
+  darkQuery.addListener(applyThemeIcon);
+}
+
+themeBtn.addEventListener('click', () => {
+  if (window.widget) window.widget.setTheme(darkQuery.matches ? 'light' : 'dark');
+});
 
 refreshBtn.addEventListener('click', () => {
   spinning = true;

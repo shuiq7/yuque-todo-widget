@@ -24,6 +24,9 @@ contextBridge.exposeInMainWorld('widget', {
   pin(value) {
     ipcRenderer.send('widget:pin', Boolean(value));
   },
+  setTheme(value) {
+    ipcRenderer.send('widget:theme', String(value || 'system'));
+  },
   minimize() {
     ipcRenderer.send('widget:minimize');
   },

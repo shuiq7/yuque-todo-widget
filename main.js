@@ -1,6 +1,6 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, shell, Menu, Tray, screen, nativeImage } = require('electron');
+const { app, BrowserWindow, ipcMain, shell, Menu, Tray, screen, nativeImage, nativeTheme } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs');
 const { pathToFileURL } = require('node:url');
@@ -10,7 +10,7 @@ const MIN_HEIGHT = 64;
 const MAX_HEIGHT = 920;
 const REFRESH_MS = 5 * 60 * 1000;
 const SCRAPER = path.join(__dirname, 'scraper.mjs');
-const DEFAULT_DOC_URL = 'https://pkuschool.yuque.com/ggicnw/hxnoxy/hdocbvbfqcppgrif';
+const DEFAULT_DOC_URL = '';
 
 let win = null;
 let tray = null;
@@ -119,9 +119,22 @@ function broadcast() {
 }
 
 async function refresh(reason) {
+  const target = effectiveDocUrl();
+  if (!target) {
+    // 还没设置文档链接：不抓取，界面上提示去设置里填。
+    snapshot = {
+      status: 'unconfigured',
+      doc: null,
+      items: [],
+      fetchedAt: null,
+      error: null,
+    };
+    broadcast();
+    return;
+  }
   try {
     const module = await import(pathToFileURL(SCRAPER).href + '?mtime=' + Date.now());
-    const result = await module.scrapeTodos(effectiveDocUrl());
+    const result = await module.scrapeTodos(target);
     snapshot = {
       status: 'ready',
       doc: result.doc || null,
@@ -182,9 +195,29 @@ function setPinned(value) {
   writeConfig({ pinned });
 }
 
+// 主题：默认跟随系统，点按钮后固定为浅色 / 深色。
+// 这里不用自己写两套样式，直接改 nativeTheme.themeSource，
+// 渲染进程里的 prefers-color-scheme 就会跟着变。
+function normalizeTheme(value) {
+  return value === 'light' || value === 'dark' ? value : 'system';
+}
+
+function currentTheme() {
+  return normalizeTheme(nativeTheme.themeSource);
+}
+
+function applyTheme(value) {
+  const theme = normalizeTheme(value);
+  nativeTheme.themeSource = theme;
+  writeConfig({ theme });
+  if (win && !win.isDestroyed()) win.webContents.send('widget:theme', theme);
+  return theme;
+}
+
 function createWindow() {
   const config = readConfig();
   pinned = config.pinned === true;
+  nativeTheme.themeSource = normalizeTheme(config.theme);
   const bounds = loadBounds();
   win = new BrowserWindow({
     x: bounds.x,
@@ -283,9 +316,15 @@ function createTray() {
       else showWidget();
     });
     tray.on('double-click', () => showWidget());
+    setTimeout(() => {
+      try {
+      } catch (error) {
+        /* best effort */
+      }
+    }, 1500);
   } catch (error) {
     tray = null;
-    console.warn('[desktop-widget] 托盘不可用，改用折叠方式收起:', (error && error.message) || error);
+    console.error('[desktop-widget] tray unavailable:', (error && error.message) || error);
   }
 }
 
@@ -421,6 +460,11 @@ ipcMain.on('widget:refresh', (event) => {
 ipcMain.on('widget:pin', (event, value) => {
   if (!win || event.sender !== win.webContents) return;
   setPinned(value);
+});
+
+ipcMain.on('widget:theme', (event, value) => {
+  if (!win || event.sender !== win.webContents) return;
+  applyTheme(value);
 });
 
 ipcMain.on('widget:minimize', (event) => {

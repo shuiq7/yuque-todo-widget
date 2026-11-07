@@ -698,6 +698,8 @@ body[data-dragging='true'] .head,
   }
 }
 
+.chip[data-action='settings'] { cursor: pointer; }
+
 .chip {
   margin: 0 11px 11px;
   padding: 8px 11px;
