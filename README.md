@@ -1,8 +1,8 @@
-# 桌面待办挂件 · Yuque Todo Widget
+# 语雀关联桌面待办挂件
 
 一个常驻 Windows 桌面的小挂件：显示今天的日期，并把一篇公开的语雀文档里的待办事项竖排展示；事项下面的链接自动变成卡片，点一下用系统默认浏览器打开。
 
-![浅色模式](docs/screenshot-light.png)
+<img width="319" height="189" alt="image" src="https://github.com/user-attachments/assets/5c798a80-f97b-49a9-9ce9-346f48cbf69c" />
 
 ## 特性
 
@@ -20,9 +20,12 @@
 
 | 深色模式 | 收进托盘的小圆点 |
 | --- | --- |
-| ![深色模式](docs/screenshot-dark.png) | ![小圆点](docs/screenshot-bubble.png) |
+| <img width="313" height="181" alt="image" src="https://github.com/user-attachments/assets/2e7c8dbd-e7a8-492c-bce3-d7cef87d0373" />
+ | <img width="70" height="59" alt="image" src="https://github.com/user-attachments/assets/18a8eaee-9caf-4802-9b81-10b9d0db5686" />
+ |
 
-![设置面板](docs/screenshot-settings.png)
+<img width="333" height="239" alt="image" src="https://github.com/user-attachments/assets/32cd4870-3206-40de-b1d9-af53a5b1bb21" />
+
 
 ## 运行
 
