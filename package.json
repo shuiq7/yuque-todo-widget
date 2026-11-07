@@ -1,0 +1,16 @@
+{
+  "name": "yuque-todo-widget",
+  "productName": "桌面待办挂件",
+  "version": "1.0.0",
+  "description": "A dreamy iridescent desktop to-do widget for Windows, synced from a public Yuque document.",
+  "main": "main.js",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "start:nosandbox": "electron . --no-sandbox"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}

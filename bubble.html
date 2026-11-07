@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'" />
+    <title>待办</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        background: transparent;
+        overflow: hidden;
+        -webkit-user-select: none;
+        user-select: none;
+        cursor: grab;
+      }
+      body[data-dragging='true'] {
+        cursor: grabbing;
+      }
+      .wrap {
+        position: absolute;
+        inset: 5px;
+      }
+      .bubble {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1px;
+        background:
+          radial-gradient(120% 120% at 22% 8%, rgba(255, 255, 255, 0.98), rgba(255, 255, 255, 0) 58%),
+          linear-gradient(142deg, rgba(206, 190, 255, 0.98), rgba(188, 231, 255, 0.98) 52%, rgba(255, 205, 232, 0.98));
+        border: 1px solid rgba(255, 255, 255, 0.88);
+        box-shadow:
+          0 12px 26px -12px rgba(96, 80, 190, 0.65),
+          0 0 24px -8px rgba(167, 139, 250, 0.7),
+          inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        box-sizing: border-box;
+        overflow: hidden;
+        transition: transform 0.12s ease, box-shadow 0.12s ease;
+      }
+      .bubble:hover {
+        transform: scale(1.05);
+        box-shadow:
+          0 16px 30px -12px rgba(96, 80, 190, 0.75),
+          0 0 28px -6px rgba(167, 139, 250, 0.85),
+          inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      }
+      body[data-dragging='true'] .bubble {
+        transform: scale(0.97);
+      }
+      svg.cal {
+        width: 22px;
+        height: 22px;
+        display: block;
+        pointer-events: none;
+      }
+      .count {
+        font: 600 9px/1 -apple-system, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        color: #4a3bb0;
+        pointer-events: none;
+        letter-spacing: 0.2px;
+      }
+      @media (prefers-color-scheme: dark) {
+        .bubble {
+          background: rgba(28, 31, 40, 0.99);
+          border-color: rgba(255, 255, 255, 0.14);
+        }
+        svg.cal {
+          stroke: #c9d3ee;
+        }
+        svg.cal .accent {
+          stroke: #c9d3ee;
+          fill: #c9d3ee;
+        }
+        .count {
+          color: #9fb2e8;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap" id="wrap">
+      <div class="bubble" id="bubble" title="点一下打开待办挂件（可以拖动）">
+        <svg class="cal" viewBox="0 0 24 24" fill="none" stroke="#4a3bb0" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="4" y="5" width="16" height="15" rx="3.5" />
+          <path d="M4 9.5h16" />
+          <path d="M8.5 3.5v3M15.5 3.5v3" />
+          <circle class="accent" cx="9.2" cy="13.6" r="1.2" fill="#4a3bb0" stroke="none" />
+          <path class="accent" d="M12.6 13.6h4.6" />
+        </svg>
+        <span class="count" id="count">4 项</span>
+      </div>
+    </div>
+    <script>
+      const bubble = document.getElementById('bubble');
+      const countEl = document.getElementById('count');
+      const api = window.bubbleApi || null;
+      let dragging = false;
+      let moved = false;
+      let startAt = { x: 0, y: 0 };
+
+      bubble.addEventListener('mousedown', (event) => {
+        if (event.button !== 0) return;
+        dragging = true;
+        moved = false;
+        startAt = { x: event.screenX, y: event.screenY };
+        document.body.dataset.dragging = 'true';
+        if (api) api.dragStart(event.screenX, event.screenY);
+        event.preventDefault();
+      });
+
+      window.addEventListener('mousemove', (event) => {
+        if (!dragging) return;
+        const dx = event.screenX - startAt.x;
+        const dy = event.screenY - startAt.y;
+        if (!moved && Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+        if (moved && api) api.dragMove(event.screenX, event.screenY);
+      });
+
+      window.addEventListener('mouseup', () => {
+        if (!dragging) return;
+        dragging = false;
+        document.body.dataset.dragging = 'false';
+        if (api) api.dragEnd();
+        if (!moved && api) api.open();
+      });
+
+      if (api) {
+        api.onCount((count) => {
+          countEl.textContent = count > 0 ? count + ' 项' : '';
+          countEl.style.display = count > 0 ? '' : 'none';
+        });
+      }
+    </script>
+  </body>
+</html>

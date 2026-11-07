@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; style-src 'unsafe-inline' 'self'; script-src 'self'; img-src 'self' data:; font-src 'self'"
+    />
+    <title>待办</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <section id="panel" class="panel" aria-label="待办挂件">
+      <div class="deco" aria-hidden="true">
+        <span class="deco-ring"></span>
+        <span class="deco-ring deco-ring--small"></span>
+        <span class="deco-square"></span>
+      </div>
+      <header id="head" class="head">
+        <div id="headtext" class="headtext" role="button" tabindex="0" title="收起 / 展开">
+          <div class="eyebrow">
+            <span id="dot" class="dot" data-state="idle"></span>
+            <span>待办</span>
+            <span id="count" class="count"></span>
+          </div>
+          <div class="date"><span id="date-main"></span><small id="date-week"></small></div>
+        </div>
+        <div class="actions">
+          <button id="refresh" class="icon" type="button" title="立即刷新" aria-label="立即刷新"></button>
+          <button id="pin" class="icon" type="button" title="置顶" aria-label="置顶"></button>
+          <button id="minimize" class="icon" type="button" title="收进托盘" aria-label="收进托盘"></button>
+          <button id="settings" class="icon" type="button" title="设置" aria-label="设置"></button>
+        </div>
+      </header>
+      <div id="list" class="list" role="list"></div>
+      <section id="settings-panel" class="settings" hidden>
+        <label class="settings-label" for="doc-url">抓取哪篇语雀文档</label>
+        <input
+          id="doc-url"
+          class="settings-input"
+          type="text"
+          spellcheck="false"
+          autocomplete="off"
+          placeholder="https://xxx.yuque.com/…"
+        />
+        <p id="settings-hint" class="settings-hint">
+          文档里的一级标题（或 1 / 2 / 3 这种序号）用来分隔事项，事项下面附的链接会变成卡片。
+        </p>
+        <div class="settings-actions">
+          <button id="settings-cancel" class="btn btn-ghost" type="button">取消</button>
+          <button id="settings-save" class="btn btn-primary" type="button">保存</button>
+        </div>
+      </section>
+      <footer id="foot" class="foot">
+        <span id="doc" class="doc"></span>
+        <span id="stamp" class="stamp"></span>
+      </footer>
+    </section>
+    <script src="renderer.js"></script>
+  </body>
+</html>

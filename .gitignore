@@ -1,0 +1,15 @@
+# dependencies
+node_modules/
+
+# electron-builder output
+dist/
+out/
+release/
+
+# local runtime data (window position, logs, cache)
+data/
+*.log
+
+# OS junk
+.DS_Store
+Thumbs.db
